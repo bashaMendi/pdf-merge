@@ -3,7 +3,7 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
-<title>איחוד קבצי PDF</title>
+<title>כלי PDF – איחוד והמרת תמונות</title>
 <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Heebo:wght@400;500;700&display=swap">
 <style>
 :root{--bg:#f3f5f8;--card:#fff;--ink:#14213d;--mute:#5b667a;--line:#d8deea;--acc:#1d4ed8;--acc-ink:#fff;--err:#b42318;--drop:#e8eefc;
@@ -14,76 +14,143 @@
 html{scroll-padding-top:env(safe-area-inset-top,0px)}
 body{margin:0;background:var(--bg);color:var(--ink);font-family:'Heebo','Segoe UI',Arial,sans-serif;line-height:1.5}
 main{max-width:640px;margin:0 auto;padding:28px 18px 48px}
-h1{font-size:1.9rem;margin:0 0 6px;font-weight:700}
-.sub{color:var(--mute);margin:0 0 22px}
+h1{font-size:1.9rem;margin:0 0 16px;font-weight:700}
+.modes{display:flex;gap:6px;background:var(--card);border:1px solid var(--line);border-radius:12px;padding:4px;margin-bottom:18px}
+.modes button{flex:1;border:0;background:transparent;color:var(--ink);font:inherit;padding:10px 8px;border-radius:9px;cursor:pointer}
+.modes button[aria-pressed="true"]{background:var(--acc);color:var(--acc-ink);font-weight:700}
+.sub{color:var(--mute);margin:0 0 18px}
 .drop{display:block;border:2px dashed var(--line);border-radius:12px;background:var(--card);padding:30px 16px;text-align:center;cursor:pointer}
 .drop.over,.drop:focus-within{border-color:var(--acc);background:var(--drop)}
 .drop strong{display:block;font-size:1.1rem;margin-bottom:4px}
 .drop span{color:var(--mute);font-size:.95rem}
 .drop input{position:absolute;opacity:0;width:1px;height:1px}
 ul{list-style:none;margin:18px 0 0;padding:0}
-li{display:flex;align-items:center;gap:10px;background:var(--card);border:1px solid var(--line);border-radius:10px;padding:10px 12px;margin-bottom:8px}
+li{display:flex;align-items:center;gap:10px;background:var(--card);border:1px solid var(--line);border-radius:10px;padding:10px 12px;margin-bottom:8px;cursor:grab}
 .grab{color:var(--mute);cursor:grab;font-size:1.2rem;line-height:1;user-select:none;padding:0 2px}
-li{cursor:grab}
 li.dragging{opacity:.4}
 li.ins-before{box-shadow:0 -3px 0 0 var(--acc)}
 li.ins-after{box-shadow:0 3px 0 0 var(--acc)}
 .idx{min-width:26px;color:var(--mute);font-weight:500;text-align:center}
+.th{width:44px;height:44px;border-radius:6px;object-fit:cover;border:1px solid var(--line);flex:none;background:var(--bg)}
 .nm{flex:1;min-width:0}
 .nm b{display:block;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;font-weight:500}
 .nm small{color:var(--mute)}
 .ic{border:1px solid var(--line);background:transparent;color:var(--ink);border-radius:8px;width:36px;height:36px;font:inherit;cursor:pointer}
 .ic:disabled{opacity:.35;cursor:default}
 .ic:hover:not(:disabled){border-color:var(--acc)}
-button:focus-visible,.drop:focus-within{outline:3px solid var(--acc);outline-offset:2px}
-.go{margin-top:14px;width:100%;border:0;border-radius:10px;background:var(--acc);color:var(--acc-ink);font:inherit;font-weight:700;font-size:1.05rem;padding:14px;cursor:pointer}
+.opts{margin-top:16px}
+.fld{display:block;font-weight:500;margin:0 0 4px}
+.nameRow{display:flex;align-items:center;gap:8px;margin-bottom:12px}
+input[type=text],select{width:100%;background:var(--card);color:var(--ink);border:1px solid var(--line);border-radius:10px;padding:11px 12px;font:inherit}
+.ext{color:var(--mute);font-weight:500}
+button:focus-visible,.drop:focus-within,input[type=text]:focus-visible,select:focus-visible{outline:3px solid var(--acc);outline-offset:2px}
+.go{margin-top:6px;width:100%;border:0;border-radius:10px;background:var(--acc);color:var(--acc-ink);font:inherit;font-weight:700;font-size:1.05rem;padding:14px;cursor:pointer}
 .go:disabled{opacity:.45;cursor:default}
 .row2{display:flex;gap:10px;align-items:center;justify-content:space-between;margin-top:10px}
 .lnk{background:none;border:0;color:var(--mute);font:inherit;text-decoration:underline;cursor:pointer;padding:4px}
 #msg{min-height:1.5em;margin-top:12px;color:var(--mute)}
 #msg.err{color:var(--err)}
 .priv{margin-top:26px;font-size:.9rem;color:var(--mute);border-top:1px solid var(--line);padding-top:14px}
+[hidden]{display:none!important}
 </style>
 </head>
 <body>
 <main>
-<h1>איחוד קבצי PDF</h1>
-<p class="sub">בוחרים כמה קבצי PDF, גוררים אותם בעכבר לסדר הרצוי ומקבלים קובץ אחד.</p>
+<h1>כלי PDF</h1>
+
+<div class="modes" role="group" aria-label="בחירת מצב">
+  <button type="button" id="m-merge" aria-pressed="true">איחוד קבצי PDF</button>
+  <button type="button" id="m-img" aria-pressed="false">המרת תמונה ל־PDF</button>
+</div>
+<p class="sub" id="sub"></p>
 
 <label class="drop" id="drop">
-  <strong>גוררים לכאן קבצי PDF או לוחצים לבחירה</strong>
-  <span>אפשר לבחור כמה קבצים בבת אחת</span>
-  <input type="file" id="pick" accept="application/pdf,.pdf" multiple>
+  <strong id="dropTitle"></strong>
+  <span id="dropHint"></span>
+  <input type="file" id="pick" multiple>
 </label>
 
 <ul id="list" aria-label="הקבצים שנבחרו"></ul>
 
-<button class="go" id="go" disabled>אחד לקובץ PDF אחד</button>
-<div class="row2"><span id="count" style="color:var(--mute)"></span><button class="lnk" id="clear" hidden>נקה הכול</button></div>
+<div class="opts">
+  <label class="fld" for="fname">שם הקובץ החדש</label>
+  <div class="nameRow">
+    <input type="text" id="fname" autocomplete="off" maxlength="120">
+    <span class="ext" dir="ltr">.pdf</span>
+  </div>
+  <div id="sizeWrap" hidden>
+    <label class="fld" for="pagesize">גודל העמוד</label>
+    <select id="pagesize" style="margin-bottom:12px">
+      <option value="a4">A4 – התמונה מותאמת לעמוד</option>
+      <option value="img">לפי גודל התמונה</option>
+    </select>
+  </div>
+</div>
+
+<button class="go" id="go" disabled></button>
+<div class="row2"><span id="count" style="color:var(--mute)"></span><button class="lnk" id="clear" type="button" hidden>נקה הכול</button></div>
 <div id="msg" role="status" aria-live="polite"></div>
 
-<p class="priv">הקבצים לא עולים לשום שרת. האיחוד מתבצע בדפדפן שלך, והקובץ המאוחד נשמר ישירות למחשב שלך.</p>
+<p class="priv" id="priv"></p>
 </main>
 
 <script src="https://cdnjs.cloudflare.com/ajax/libs/pdf-lib/1.17.1/pdf-lib.min.js"></script>
 <script>
 (function(){
-  var files=[], nextId=1, dragIdx=-1;
   var $=function(i){return document.getElementById(i)};
-  var list=$('list'), go=$('go'), msg=$('msg'), clr=$('clear'), drop=$('drop'), count=$('count');
+  var list=$('list'), go=$('go'), msg=$('msg'), clr=$('clear'), drop=$('drop'), count=$('count'), fname=$('fname'), pick=$('pick');
+
+  var MODES={
+    merge:{
+      sub:'בוחרים כמה קבצי PDF, גוררים אותם בעכבר לסדר הרצוי ומקבלים קובץ אחד.',
+      dropTitle:'גוררים לכאן קבצי PDF או לוחצים לבחירה',
+      dropHint:'אפשר לבחור כמה קבצים בבת אחת',
+      accept:'application/pdf,.pdf',
+      btn:'אחד לקובץ PDF אחד',
+      def:'מאוחד', min:2,
+      busy:'מאחד קבצים…',
+      done:'הקובץ הורד. אפשר להתחיל מחדש.',
+      fail:'האיחוד נכשל. נסה שוב, או הסר קובץ שנראה פגום.',
+      priv:'הקבצים לא עולים לשום שרת. האיחוד מתבצע בדפדפן שלך, והקובץ המאוחד נשמר ישירות למחשב שלך.',
+      one:'הוסף עוד קובץ אחד לפחות כדי לאחד.'
+    },
+    img:{
+      sub:'בוחרים תמונה אחת או כמה, גוררים אותן לסדר הרצוי וכל תמונה הופכת לעמוד ב־PDF.',
+      dropTitle:'גוררים לכאן תמונות או לוחצים לבחירה',
+      dropHint:'נתמכים: JPG, PNG, WEBP, GIF, BMP',
+      accept:'image/png,image/jpeg,image/webp,image/gif,image/bmp',
+      btn:'המר ל־PDF',
+      def:'תמונות', min:1,
+      busy:'ממיר תמונות…',
+      done:'הקובץ הורד. אפשר להתחיל מחדש.',
+      fail:'ההמרה נכשלה. נסה שוב, או הסר תמונה שנראית פגומה או גדולה מאוד.',
+      priv:'התמונות לא עולות לשום שרת. ההמרה מתבצעת בדפדפן שלך, והקובץ נשמר ישירות למחשב שלך.'
+    }
+  };
+  var data={merge:[],img:[]}, names={merge:'',img:''}, mode='merge', nextId=1, dragIdx=-1;
+  function files(){return data[mode]}
 
   function clearMarks(){Array.prototype.forEach.call(list.children,function(x){x.classList.remove('dragging','ins-before','ins-after')})}
   function say(t,err){msg.textContent=t||'';msg.className=err?'err':''}
   function size(n){return n>1048576?(n/1048576).toFixed(1)+' MB':Math.max(1,Math.round(n/1024))+' KB'}
+  function lt(t){return '\u2066'+t+'\u2069'}
+  function release(f){if(f&&f.thumb){try{URL.revokeObjectURL(f.thumb)}catch(_){}}}
+
+  function cleanName(){
+    var n=fname.value.replace(/\.pdf\s*$/i,'').replace(/[\\\/:*?"<>|\u0000-\u001f]/g,'').replace(/\s+/g,' ').trim();
+    return (n||MODES[mode].def).slice(0,120)+'.pdf';
+  }
 
   function render(){
+    var cfg=MODES[mode], fl=files();
     list.innerHTML='';
-    files.forEach(function(f,i){
+    fl.forEach(function(f,i){
       var li=document.createElement('li');
       var idx=document.createElement('span');idx.className='idx';idx.textContent=i+1;
       var nm=document.createElement('div');nm.className='nm';
       var b=document.createElement('b');b.textContent=f.name;b.title=f.name;
-      var s=document.createElement('small');s.textContent=f.pages+' עמודים · '+size(f.size);
+      var s=document.createElement('small');
+      s.textContent=(mode==='merge'?f.pages+' עמודים':lt(f.w+'×'+f.h))+' · '+lt(size(f.size));
       nm.appendChild(b);nm.appendChild(s);
       function btn(label,txt,fn,dis){var x=document.createElement('button');x.className='ic';x.type='button';x.setAttribute('aria-label',label);x.title=label;x.textContent=txt;x.disabled=!!dis;x.onclick=fn;return x}
       var gr=document.createElement('span');gr.className='grab';gr.textContent='⠿';gr.setAttribute('aria-hidden','true');gr.title='גרור כדי לשנות מיקום';
@@ -101,70 +168,156 @@ button:focus-visible,.drop:focus-within{outline:3px solid var(--acc);outline-off
         e.preventDefault();
         var r=li.getBoundingClientRect();var after=e.clientY>r.top+r.height/2;
         var to=i+(after?1:0);var from=dragIdx;dragIdx=-1;
-        var item=files.splice(from,1)[0];
+        var item=fl.splice(from,1)[0];
         if(from<to)to--;
-        files.splice(to,0,item);
+        fl.splice(to,0,item);
         render();
       });
-      li.appendChild(gr);li.appendChild(idx);li.appendChild(nm);
+      li.appendChild(gr);li.appendChild(idx);
+      if(f.thumb){var im=document.createElement('img');im.className='th';im.alt='';im.src=f.thumb;im.draggable=false;li.appendChild(im)}
+      li.appendChild(nm);
       li.appendChild(btn('הזז למעלה','↑',function(){mv(i,-1)},i===0));
-      li.appendChild(btn('הזז למטה','↓',function(){mv(i,1)},i===files.length-1));
-      li.appendChild(btn('הסר קובץ','✕',function(){files.splice(i,1);render()}));
+      li.appendChild(btn('הזז למטה','↓',function(){mv(i,1)},i===fl.length-1));
+      li.appendChild(btn('הסר','✕',function(){release(fl[i]);fl.splice(i,1);render()}));
       list.appendChild(li);
     });
-    go.disabled=files.length<2;
-    clr.hidden=files.length===0;
-    var pages=files.reduce(function(a,f){return a+f.pages},0);
-    count.textContent=files.length?files.length+' קבצים · '+pages+' עמודים':'';
-    if(files.length===1)say('הוסף עוד קובץ אחד לפחות כדי לאחד.');
+    go.disabled=fl.length<cfg.min;
+    clr.hidden=fl.length===0;
+    if(mode==='merge'){
+      var pages=fl.reduce(function(a,f){return a+f.pages},0);
+      count.textContent=fl.length?fl.length+' קבצים · '+pages+' עמודים':'';
+    }else{
+      count.textContent=fl.length?fl.length+' תמונות · '+fl.length+' עמודים':'';
+    }
   }
-  function mv(i,d){var j=i+d;if(j<0||j>=files.length)return;var t=files[i];files[i]=files[j];files[j]=t;render()}
+  function mv(i,d){var fl=files();var j=i+d;if(j<0||j>=fl.length)return;var t=fl[i];fl[i]=fl[j];fl[j]=t;render()}
+
+  async function bitmap(f){
+    try{return await createImageBitmap(f,{imageOrientation:'from-image'})}
+    catch(e){return await createImageBitmap(f)}
+  }
 
   async function add(fileList){
     say('');
-    var bad=[];
+    var bad=[], m=mode, fl=data[m];
     for(var k=0;k<fileList.length;k++){
       var f=fileList[k];
-      if(!/\.pdf$/i.test(f.name)&&f.type!=='application/pdf'){bad.push(f.name+' (לא PDF)');continue}
-      try{
-        var buf=await f.arrayBuffer();
-        var doc=await PDFLib.PDFDocument.load(buf);
-        files.push({id:nextId++,name:f.name,size:f.size,buf:buf,pages:doc.getPageCount()});
-      }catch(e){bad.push(f.name+' (לא ניתן לקרוא, ייתכן שהקובץ מוגן בסיסמה)')}
+      if(m==='merge'){
+        if(!/\.pdf$/i.test(f.name)&&f.type!=='application/pdf'){bad.push(f.name+' (לא PDF)');continue}
+        try{
+          var buf=await f.arrayBuffer();
+          var doc=await PDFLib.PDFDocument.load(buf);
+          fl.push({id:nextId++,name:f.name,size:f.size,buf:buf,pages:doc.getPageCount()});
+        }catch(e){bad.push(f.name+' (לא ניתן לקרוא, ייתכן שהקובץ מוגן בסיסמה)')}
+      }else{
+        if(!/^image\/(png|jpeg|webp|gif|bmp)$/.test(f.type)){bad.push(f.name+' (סוג תמונה לא נתמך)');continue}
+        try{
+          var bmp=await bitmap(f);
+          var w=bmp.width,h=bmp.height;
+          if(bmp.close)bmp.close();
+          fl.push({id:nextId++,name:f.name,size:f.size,file:f,w:w,h:h,thumb:URL.createObjectURL(f)});
+        }catch(e){bad.push(f.name+' (לא ניתן לקרוא)')}
+      }
     }
     render();
     if(bad.length)say('לא נוספו: '+bad.join(', '),true);
+    else if(m==='merge'&&mode==='merge'&&fl.length===1)say(MODES.merge.one);
   }
 
-  $('pick').addEventListener('change',function(e){add(Array.from(e.target.files));e.target.value=''});
+  pick.addEventListener('change',function(e){add(Array.from(e.target.files));e.target.value=''});
   ['dragenter','dragover'].forEach(function(t){drop.addEventListener(t,function(e){e.preventDefault();drop.classList.add('over')})});
   ['dragleave','drop'].forEach(function(t){drop.addEventListener(t,function(e){e.preventDefault();drop.classList.remove('over')})});
   drop.addEventListener('drop',function(e){add(Array.from(e.dataTransfer.files))});
-  clr.addEventListener('click',function(){files=[];say('');render()});
+  clr.addEventListener('click',function(){files().forEach(release);data[mode]=[];say('');render()});
+
+  function setMode(m){
+    names[mode]=fname.value;
+    mode=m;
+    var cfg=MODES[m];
+    $('m-merge').setAttribute('aria-pressed',m==='merge');
+    $('m-img').setAttribute('aria-pressed',m==='img');
+    $('sub').textContent=cfg.sub;
+    $('dropTitle').textContent=cfg.dropTitle;
+    $('dropHint').textContent=cfg.dropHint;
+    pick.accept=cfg.accept;
+    go.textContent=cfg.btn;
+    fname.value=names[m];
+    fname.placeholder=cfg.def;
+    $('sizeWrap').hidden=(m!=='img');
+    $('priv').textContent=cfg.priv;
+    say('');
+    render();
+  }
+  $('m-merge').addEventListener('click',function(){if(mode!=='merge')setMode('merge')});
+  $('m-img').addEventListener('click',function(){if(mode!=='img')setMode('img')});
+
+  async function buildMerged(out,fl){
+    for(var i=0;i<fl.length;i++){
+      var src=await PDFLib.PDFDocument.load(fl[i].buf);
+      var pgs=await out.copyPages(src,src.getPageIndices());
+      pgs.forEach(function(p){out.addPage(p)});
+    }
+  }
+
+  async function buildImages(out,fl){
+    var fit=$('pagesize').value;
+    for(var i=0;i<fl.length;i++){
+      var f=fl[i], emb, w, h;
+      if(f.file.type==='image/png'){
+        emb=await out.embedPng(new Uint8Array(await f.file.arrayBuffer()));
+        w=emb.width;h=emb.height;
+      }else{
+        var bmp=await bitmap(f.file);
+        w=bmp.width;h=bmp.height;
+        var c=document.createElement('canvas');c.width=w;c.height=h;
+        var x=c.getContext('2d');x.fillStyle='#fff';x.fillRect(0,0,w,h);x.drawImage(bmp,0,0);
+        if(bmp.close)bmp.close();
+        var blob=await new Promise(function(r){c.toBlob(r,'image/jpeg',0.92)});
+        c.width=0;c.height=0;
+        if(!blob)throw new Error('encode');
+        emb=await out.embedJpg(new Uint8Array(await blob.arrayBuffer()));
+      }
+      var pw,ph,dx=0,dy=0,dw,dh;
+      if(fit==='img'){
+        var k=Math.min(1,14000/(Math.max(w,h)*0.75));
+        pw=w*0.75*k;ph=h*0.75*k;dw=pw;dh=ph;
+      }else{
+        var land=w>h, mg=28;
+        pw=land?841.89:595.28;ph=land?595.28:841.89;
+        var sc=Math.min((pw-2*mg)/w,(ph-2*mg)/h);
+        dw=w*sc;dh=h*sc;dx=(pw-dw)/2;dy=(ph-dh)/2;
+      }
+      out.addPage([pw,ph]).drawImage(emb,{x:dx,y:dy,width:dw,height:dh});
+    }
+  }
+
+  function saveFile(bytes,name){
+    var blob=new Blob([bytes],{type:'application/pdf'});
+    var url=URL.createObjectURL(blob);
+    var a=document.createElement('a');a.href=url;a.download=name;
+    document.body.appendChild(a);a.click();a.remove();
+    setTimeout(function(){URL.revokeObjectURL(url)},10000);
+  }
 
   go.addEventListener('click',async function(){
-    go.disabled=true;say('מאחד קבצים…');
+    var m=mode, cfg=MODES[m], fl=data[m], outName=cleanName();
+    go.disabled=true;say(cfg.busy);
     try{
       var out=await PDFLib.PDFDocument.create();
-      for(var i=0;i<files.length;i++){
-        var src=await PDFLib.PDFDocument.load(files[i].buf);
-        var pgs=await out.copyPages(src,src.getPageIndices());
-        pgs.forEach(function(p){out.addPage(p)});
-      }
-      var bytes=await out.save();
-      var blob=new Blob([bytes],{type:'application/pdf'});
-      var url=URL.createObjectURL(blob);
-      var a=document.createElement('a');a.href=url;a.download='מאוחד.pdf';
-      document.body.appendChild(a);a.click();a.remove();
-      setTimeout(function(){URL.revokeObjectURL(url)},10000);
-      files=[];render();say('הקובץ הורד. אפשר להתחיל מחדש.');
+      if(m==='merge')await buildMerged(out,fl);else await buildImages(out,fl);
+      saveFile(await out.save(),outName);
+      fl.forEach(release);data[m]=[];names[m]='';
+      if(mode===m)fname.value='';
+      say(cfg.done);
     }catch(e){
-      if(e&&e.code==='declined')say('השמירה בוטלה.');
-      else say('האיחוד נכשל. נסה שוב, או הסר קובץ שנראה פגום.',true);
+      say(cfg.fail,true);
     }
-    go.disabled=files.length<2;
+    if(mode===m)render();
   });
-  render();
+
+  fname.addEventListener('keydown',function(e){if(e.key==='Enter'&&!go.disabled){e.preventDefault();go.click()}});
+
+  setMode('merge');
 })();
 </script>
 </body>
